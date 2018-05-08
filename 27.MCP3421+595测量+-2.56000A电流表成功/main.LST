@@ -1,0 +1,84 @@
+C51 COMPILER V9.05   MAIN                                                                  04/01/2018 15:12:53 PAGE 1   
+
+
+C51 COMPILER V9.05, COMPILATION OF MODULE MAIN
+OBJECT MODULE PLACED IN main.OBJ
+COMPILER INVOKED BY: C:\Keil\C51\BIN\C51.EXE main.c BROWSE DEBUG OBJECTEXTEND
+
+line level    source
+
+   1          #include <STC12C5204AD.H>
+   2          #include <intrins.h>
+   3          void init_timer1();     
+   4          unsigned int num=0;
+   5          unsigned char xdata shi=0,fen=0;
+   6          unsigned int xdata miao=0;
+   7          long AD_temp; 
+   8          #include "mcp3421.H"
+   9          #include "595.h"
+  10          
+  11          void main(void)
+  12          {                             
+  13   1                      unsigned char   test_data[3]={0x00,0x00,0x00};
+  14   1                      long aa;
+  15   1                      init_timer1();
+  16   1                      WrToMCP3421(SlaveADDR, 0x9f);      // 1001 1100
+  17   1      while (1)
+  18   1                      {
+  19   2                      LED_595_display();      
+  20   2                      RdFromMCP3421(SlaveADDR, test_data,3);  // 连续读取3个字节数据
+  21   2                      aa=test_data[0]<<8;
+  22   2                      aa=aa+test_data[1];
+  23   2                      aa=aa<<8;
+  24   2                      aa=aa+  test_data[2]; 
+  25   2                      //AD_temp=aa;
+  26   2                      aa+=131072;
+  27   2                      if(aa<=131072)aa=131072-aa;  //大于中间值
+  28   2                      else if(aa>131072)aa-=131072;
+  29   2                      AD_temp =aa*1.945;
+  30   2      
+  31   2              }
+  32   1      
+  33   1      }
+  34          
+  35          void init_timer1()//定时器初始化函数
+  36                  {
+  37   1              TMOD = 0x01;
+  38   1              TH0=(65535-50000)/256;
+  39   1          TL0=(65535-50000)%256;
+  40   1          EA = 1;   //开总中断          
+  41   1          ET0 = 1;  //定时器0中断打开
+  42   1          TR0 = 1;  //打开定时器 开始计时
+  43   1      
+  44   1              }
+  45          void Timer0Interrupt(void) interrupt 1
+  46          {       
+  47   1              TH0=(65535-50000)/256;
+  48   1          TL0=(65535-50000)%256;
+  49   1          num++; 
+  50   1                      if(num==10)
+  51   1                      {       
+  52   2                       num=0;
+  53   2                       //kkk=MCPadread();
+  54   2                              miao++;
+  55   2                              if(miao==9999)
+C51 COMPILER V9.05   MAIN                                                                  04/01/2018 15:12:53 PAGE 2   
+
+  56   2                              miao=0;
+  57   2                      }
+  58   1              
+  59   1      }                        
+
+
+MODULE INFORMATION:   STATIC OVERLAYABLE
+   CODE SIZE        =   1086    ----
+   CONSTANT SIZE    =      3    ----
+   XDATA SIZE       =     28    ----
+   PDATA SIZE       =   ----    ----
+   DATA SIZE        =      6      20
+   IDATA SIZE       =   ----    ----
+   BIT SIZE         =   ----       1
+END OF MODULE INFORMATION.
+
+
+C51 COMPILATION COMPLETE.  0 WARNING(S),  0 ERROR(S)
